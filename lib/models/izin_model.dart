@@ -1,39 +1,35 @@
 class Izin {
   int? id;
-  final String nama;
-  final String kelas;
-  final String tujuan;
-  final String tanggal;
-  String status; // 'Pending', 'Diterima', 'Ditolak'
+  String nama;
+  String kamar;
+  String tujuan;
+  String tanggal;
+  String status;
 
   Izin({
     this.id,
     required this.nama,
-    required this.kelas,
+    required this.kamar,
     required this.tujuan,
     required this.tanggal,
-    this.status = 'Pending',
+    required this.status,
   });
 
-  Map<String, dynamic> toMap() {
-    return {
-      'id': id,
-      'nama': nama,
-      'kelas': kelas,
-      'tujuan': tujuan,
-      'tanggal': tanggal,
-      'status': status,
-    };
-  }
+  factory Izin.fromMap(Map<String, dynamic> json) => Izin(
+    id: json['id'],
+    nama: json['nama'],
+    kamar: json['kamar'],
+    tujuan: json['tujuan'],
+    tanggal: json['tanggal'],
+    status: json['status'],
+  );
 
-  factory Izin.fromMap(Map<String, dynamic> map) {
-    return Izin(
-      id: map['id'],
-      nama: map['nama'],
-      kelas: map['kelas'],
-      tujuan: map['tujuan'],
-      tanggal: map['tanggal'],
-      status: map['status'],
-    );
-  }
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'nama': nama,
+    'kamar': kamar,
+    'tujuan': tujuan,
+    'tanggal': tanggal,
+    'status': status,
+  };
 }
