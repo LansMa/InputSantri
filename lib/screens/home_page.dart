@@ -31,7 +31,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-   Future<void> _tambahIzin() async {
+  Future<void> _tambahIzin() async {
     final izin = Izin(
       nama: _namaCtrl.text,
       kamar: _selectedKamar,
@@ -153,3 +153,162 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildIzinCard(Izin izin) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+      elevation: 3,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.person, color: Colors.green),
+                SizedBox(width: 8),
+                Text(
+                  izin.nama,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+              ],
+            ),
+            SizedBox(height: 6),
+            Text('Kamar: ${izin.kamar}'),
+            Text('Tujuan: ${izin.tujuan}'),
+            Text('Tanggal: ${izin.tanggal}'),
+            Text(
+              'Status: ${izin.status}',
+              style: TextStyle(
+                color:
+                    izin.status == 'Pending'
+                        ? Colors.orange
+                        : izin.status == 'Sedang Izin'
+                        ? Colors.green
+                        : Colors.blue,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 6),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  icon: Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () async {
+                    _namaCtrl.text = izin.nama;
+                    _selectedKamar = izin.kamar;
+                    _tujuanCtrl.text = izin.tujuan;
+                    _selectedDate =
+                        DateTime.tryParse(izin.tanggal.split(' ')[0]) ??
+                        DateTime.now();
+                    _selectedWaktu =
+                        izin.tanggal.contains('Pagi')
+                            ? 'Pagi'
+                            : izin.tanggal.contains('Siang')
+                            ? 'Siang'
+                            : izin.tanggal.contains('Sore')
+                            ? 'Sore'
+                            : 'Malam';
+
+                    await showDialog(
+                      context: context,
+                      builder:
+                          (_) => AlertDialog(
+                            title: Text('Edit Izin'),
+                            content: SingleChildScrollView(
+                              child: _buildInputForm(isDialog: true),
+                            ),
+                            actions: [
+                              TextButton(
+                                child: Text('Simpan'),
+                                onPressed: () async {
+                                  final updated = Izin(
+                                    id: izin.id,
+                                    nama: _namaCtrl.text,
+                                    kamar: _selectedKamar,
+                                    tujuan: _tujuanCtrl.text,
+                                    tanggal:
+                                        '${_selectedDate.toLocal()}'.split(
+                                          ' ',
+                                        )[0] +
+                                        ' ($_selectedWaktu)',
+                                    status: izin.status,
+                                  );
+                                  await _editIzin(izin.id!, updated);
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          ),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _hapusIzin(izin.id!),
+                ),
+                IconButton(
+                  icon: Icon(Icons.check_circle, color: Colors.green),
+                  onPressed:
+                      () => _editIzin(
+                        izin.id!,
+                        izin.copyWith(status: 'Sedang Izin'),
+                      ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.home, color: Colors.blue),
+                  onPressed:
+                      () => _editIzin(
+                        izin.id!,
+                        izin.copyWith(status: 'Sudah Kembali'),
+                      ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Pengajuan Izin Santri')),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildInputForm(),
+            const Divider(height: 20),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: daftarIzin.length,
+              itemBuilder: (_, index) => _buildIzinCard(daftarIzin[index]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+extension on Izin {
+  Izin copyWith({
+    String? nama,
+    String? kamar,
+    String? tujuan,
+    String? tanggal,
+    String? status,
+  }) {
+    return Izin(
+      id: id,
+      nama: nama ?? this.nama,
+      kamar: kamar ?? this.kamar,
+      tujuan: tujuan ?? this.tujuan,
+      tanggal: tanggal ?? this.tanggal,
+      status: status ?? this.status,
+    );
+  }
+}
