@@ -11,10 +11,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _namaCtrl = TextEditingController();
-  String _selectedKamar = 'M.1';
   final _tujuanCtrl = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  final _searchCtrl = TextEditingController();
+
+  String _selectedKamar = 'M.1';
   String _selectedWaktu = 'Pagi';
+  String _searchKeyword = '';
+  DateTime _selectedDate = DateTime.now();
 
   List<Izin> daftarIzin = [];
 
@@ -27,7 +30,18 @@ class _HomePageState extends State<HomePage> {
   Future<void> _muatData() async {
     final data = await IzinDatabase.getAllIzin();
     setState(() {
-      daftarIzin = data;
+      daftarIzin =
+          data
+              .where(
+                (izin) =>
+                    izin.nama.toLowerCase().contains(
+                      _searchKeyword.toLowerCase(),
+                    ) ||
+                    izin.tujuan.toLowerCase().contains(
+                      _searchKeyword.toLowerCase(),
+                    ),
+              )
+              .toList();
     });
   }
 
@@ -142,10 +156,31 @@ class _HomePageState extends State<HomePage> {
           ),
           if (!isDialog) ...[
             const SizedBox(height: 10),
-            ElevatedButton.icon(
-              icon: Icon(Icons.save),
-              label: Text('Simpan Izin'),
-              onPressed: _tambahIzin,
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: Icon(Icons.save),
+                    label: Text('Simpan Izin'),
+                    onPressed: _tambahIzin,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _searchCtrl,
+                    decoration: InputDecoration(
+                      labelText: 'Pencarian',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (val) {
+                      setState(() => _searchKeyword = val);
+                      _muatData();
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -275,18 +310,24 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Pengajuan Izin Santri')),
-      body: SingleChildScrollView(
-        child: Column(
+      appBar: AppBar(
+        title: Text('Pengajuan Izin Santri'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _muatData,
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: _muatData,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 100),
           children: [
             _buildInputForm(),
             const Divider(height: 20),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: daftarIzin.length,
-              itemBuilder: (_, index) => _buildIzinCard(daftarIzin[index]),
-            ),
+            ...daftarIzin.map(_buildIzinCard).toList(),
           ],
         ),
       ),
