@@ -1,54 +1,24 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/izin_model.dart';
 
 class IzinDatabase {
-  static Database? _db;
-
-  static Future<Database> _getDb() async {
-    if (_db != null) return _db!;
-    final path = join(await getDatabasesPath(), 'izin_santri.db');
-    _db = await openDatabase(
-      path,
-      version: 1,
-      onCreate: (db, version) {
-        return db.execute('''
-          CREATE TABLE izin (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nama TEXT,
-            kamar TEXT,
-            tujuan TEXT,
-            tanggal TEXT,
-            status TEXT, 
-          )
-        ''');
-      },
-    );
-    return _db!;
-  }
+  static final _client = Supabase.instance.client;
 
   static Future<void> insertIzin(Izin izin) async {
-    final db = await _getDb();
-    await db.insert(
-      'izin',
-      izin.toMap(),
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await _client.from('izin').insert(izin.toInsertMap());
   }
 
   static Future<List<Izin>> getAllIzin() async {
-    final db = await _getDb();
-    final result = await db.query('izin');
-    return result.map((e) => Izin.fromMap(e)).toList();
+    final response = await _client.from('izin').select();
+    final List<dynamic> rawList = response;
+    return rawList.map((e) => Izin.fromMap(e as Map<String, dynamic>)).toList();
   }
 
   static Future<void> updateIzin(int id, Izin izin) async {
-    final db = await _getDb();
-    await db.update('izin', izin.toMap(), where: 'id = ?', whereArgs: [id]);
+    await _client.from('izin').update(izin.toMap()).eq('id', id);
   }
 
   static Future<void> deleteIzin(int id) async {
-    final db = await _getDb();
-    await db.delete('izin', where: 'id = ?', whereArgs: [id]);
+    await _client.from('izin').delete().eq('id', id);
   }
 }
