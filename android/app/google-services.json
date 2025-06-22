@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "322555116285",
+    "project_id": "izin-santri-app",
+    "storage_bucket": "izin-santri-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:322555116285:android:e15f45e2cdc043156f5c94",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDA61ZZJZGoPsTTf0-IAQAYLfFAX2jzK28"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
